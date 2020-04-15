@@ -1,0 +1,165 @@
+function [ resultsT , masksT , resultsF , masksF ] = permutation_inference( Y , regdata , params )
+% PERMUTATION_INFERENCE conducts a statistical permutation test to create
+% statistical non-parametric maps (SnPM) of all components in the
+% factorization, based on wavelet-based reshuffling. Testing is done in
+% 'GLM-style' in each ROI, based on regressors that originate directly from
+% the sCMTF component time courses, and the local HRFs in the ROI.
+% Correction for multiple testing is done via the maximum statistic
+% procedure. For each component, a pseudo-T test is conducted, as well as a
+% pseudo-F test (based on square of the T-values).
+% 
+% INPUTS
+% - Y = (time points x ROIs) BOLD data matrix
+% - regdata = structure containing all necessary data on the regressors
+% (time courses and initial spatial loadings) to perform testing
+% - params = structure containing several parameters for testing
+%
+% OUTPUTS
+% - resultsT = results of the pseudo-T test
+% - masksT = threshold masks of the pseudo-T test
+% - resultsF = results of the pseudo-F test
+% - resultsF = threshold masks of the pseudo-F test
+%
+% Author: Simon Van Eyndhoven (simon.vaneyndhoven@gmail.com)
+
+
+%%
+% if ~iscell(Y) % convert the data to cell format to have a uniform representation as factor-compressed data
+%     Y = { Y , sparse(eye(size(Y,2))) };
+% end
+
+%% Initialization
+[Iv,R] = size(regdata.Beta0);
+    assert( size(regdata.X0,2) == R )
+    assert( size(Y,2) == Iv )
+Is = size(Y,1);
+
+masksT = struct;
+resultsT = struct;
+masksF = struct;
+resultsF = struct;
+
+% -- construct 'local design matrix' for every ROI, and calculate the
+% original test-statistic (for the unshuffled data). 
+try
+    lnc = regdata.lnc;
+catch
+    lnc = 0;
+end
+if lnc > 0 % create a function that can perform non-causal convolution
+    truncateT = @(x)x(1+lnc:end,:);
+    convolveT = @(h,x)fftfilt(h,cat(1,x,zeros(lnc,size(x,2))));
+    ncconv = @(h,x)truncateT(convolveT(h,x));    
+else
+end
+
+X = cell(1,Iv);
+Px = cell(1,Iv);
+resultsT.T0 = zeros(size(regdata.Beta0));
+for iv = 1 : Iv
+    % -- compute the local design matrix
+    if lnc == 0
+        X{iv} = fftfilt( regdata.H0(:,iv) , regdata.X0 );
+    else
+        X{iv} = ncconv( regdata.H0(:,iv) , regdata.X0 );
+    end
+    % -- compute the projection matrix to solve least-squares problems
+    [Qx,Rx] = qr(X{iv},0);
+    Px{iv} = (Rx'*Rx)\Rx'*Qx';
+    % -- compute the test-statistic for the unshuffled data
+    resultsT.T0(iv,:) = regdata.Beta0(iv,:) ./ sqrt(regdata.recerr(iv) * regdata.regvar(:,iv)') ;
+end
+    
+% -- compute F statistic: for a test on a single regressor, this is simply
+% the square of the T statistic
+resultsF.T0 = resultsT.T0.^2;
+
+%% Permutation-based inference
+fprintf('Starting permutation-based inference...\n')
+tic;
+    
+    masksT.perm = struct;
+    resultsT.perm = struct;
+    masksF.perm = struct;
+    resultsF.perm = struct;
+    
+% -- find empirical null-distribution of test statistic using data
+% reshuffling
+Tperm = zeros(Iv,R,params.infer.perm.n);
+Fperm = zeros(Iv,R,params.infer.perm.n);
+
+f0 = frob(Y); 
+fprintf('** norm of original data (adjusted for residual) = %2.4f\n',f0)
+
+parfor p = 1 : params.infer.perm.n
+    
+    if mod(p-1,25) == 0
+        fprintf('reshuffling %d out of %d\n',p,params.infer.perm.n)
+    end
+    
+    % generate surrogate data
+    if true
+        Yperm = waveletresample( Y , [] , true );
+    else
+        Yperm = fourierresample( Y );
+    end
+    fp = frob(Yperm);
+    if abs(log(fp/f0)) > abs(log(1.1))
+        fprintf('** norm of resampled data in iteration %d = %2.4f\n',p,fp)        
+    end
+    Yperm = Yperm * f0 / frob(Yperm);
+    
+    % loop over all ROIs
+    for iv = 1 : Iv
+        
+        % perform local regression to find surrogate test statistic
+        yv = Yperm(:,iv);
+        betav = Px{iv} * yv ;   
+        errv = yv - X{iv}*betav ;
+        sigerr2 = errv'*errv; % no normalization by 1/(nt-nr) (this is already done in the precomputation)
+        Tperm(iv,:,p) = ( betav ./ sqrt( sigerr2*regdata.regvar(:,iv) ) )';
+        
+        Fperm(iv,:,p) = Tperm(iv,:,p).^2;
+        
+    end
+    
+end
+fprintf('-- Permutation-based inference concluded after %d s\n',round(toc))
+
+% -- add T0 itself to the permutation distribution (this is advocated, see e.g. Winkler2014Neuroimage)
+if true
+    Tperm = cat( 3, Tperm , resultsT.T0 );
+    Fperm = cat( 3, Fperm , resultsF.T0 );
+    params.infer.perm.n = params.infer.perm.n + 1;
+end
+
+% -- find the thresholds for (de)activation
+resultsT.perm.critidx = floor( params.infer.alpha*params.infer.perm.n ) + 1;
+resultsF.perm.critidx = floor( params.infer.alpha*params.infer.perm.n ) + 1;
+Tmax = permute( max(Tperm,[],1) , [3,2,1] ); % find the maximal T-value in every ROI, for every regressor and every permutation
+Tmax = sort( Tmax , 1 , 'descend' );
+Tmin = permute( min(Tperm,[],1) , [3,2,1] ); % find the maximal T-value in every ROI, for every regressor and every permutation
+Tmin = sort( Tmin , 1 , 'ascend' );
+Fmax = permute( max(Fperm,[],1) , [3,2,1] ); % find the maximal F-value in every ROI, for every regressor and every permutation
+Fmax = sort( Fmax , 1 , 'descend' );
+Fmin = permute( min(Fperm,[],1) , [3,2,1] ); % find the maximal F-value in every ROI, for every regressor and every permutation
+Fmin = sort( Fmin , 1 , 'ascend' );
+
+resultsT.perm.Tmax = Tmax;
+resultsT.perm.Tmin = Tmin;
+resultsF.perm.Tmax = Fmax;
+resultsF.perm.Tmin = Fmin;
+
+resultsT.perm.threshpos = Tmax( resultsT.perm.critidx , : );
+resultsT.perm.threshneg = Tmin( resultsT.perm.critidx , : );
+resultsF.perm.threshpos = Fmax( resultsF.perm.critidx , : );
+resultsF.perm.threshneg = Fmin( resultsF.perm.critidx , : );
+
+% -- apply the thresholds
+masksT.perm.pos = bsxfun( @gt , resultsT.T0 , resultsT.perm.threshpos ) ;
+masksT.perm.neg = bsxfun( @lt , resultsT.T0 , resultsT.perm.threshneg ) ;
+masksF.perm.pos = bsxfun( @gt , resultsF.T0 , resultsF.perm.threshpos ) ;
+masksF.perm.neg = bsxfun( @lt , resultsF.T0 , resultsF.perm.threshneg ) ;
+
+
+end
