@@ -9,16 +9,16 @@ submitted to NeuroImage
 
 Usage: run 'main_pipeline.m'
 
-In order to run the code, the user needs an installation of the Statistical Parametric Mapping (SPM) toolbox, version 8 or 12.
+In order to run the code, the user needs 1) an installation of the Statistical Parametric Mapping (SPM) toolbox, version 8 or 12; 2) the mwf-artifact-removal toolbox:
+
+[2] Somers, B., Francart, T. and Bertrand, A. (2018). A generic EEG artifact removal algorithm based on the multi-channel Wiener filter. Journal of Neural Engineering, 15(3), 036007. DOI: 10.1088/1741-2552/aaac92
+[3] Somers, B., Francart, T. and Bertrand, A. (2017). MWF toolbox for EEG artifact removal. Available online, URL: http://www.github.com/exporl/mwf-artifact-removal
+
 
 For convenience, we include partial or complete code of less common toolboxes, which our code relies on:
 
 Tensorlab: 
 [1] Vervliet N., Debals O., Sorber L., Van Barel M. and De Lathauwer L. Tensorlab 3.0, Available online, Mar. 2016. URL: https://www.tensorlab.net/
-
-mwf-artifact-removal:
-[2] Somers, B., Francart, T. and Bertrand, A. (2018). A generic EEG artifact removal algorithm based on the multi-channel Wiener filter. Journal of Neural Engineering, 15(3), 036007. DOI: 10.1088/1741-2552/aaac92
-[3] Somers, B., Francart, T. and Bertrand, A. (2017). MWF toolbox for EEG artifact removal. Available online, URL: http://www.github.com/exporl/mwf-artifact-removal
 
 Brainnetome:
 [4] Fan, L., Li, H., Zhuo, J., Zhang, Y., Wang, J., Chen, L., Yang, Z., Chu, C., Xie, S., Laird, A.R., Fox, P.T., Eickhoff, S.B., Yu, C. & Jiang, T. The Human Brainnetome Atlas: A New Brain Atlas Based on Connectional Architecture. Cerebral Cortex, 26 (8): 3508-3526,(2016). 
