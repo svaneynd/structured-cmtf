@@ -9,7 +9,7 @@ submitted to NeuroImage
 
 Usage: run 'main_pipeline.m'.
 
-In order to run the code, the user needs 1) an installation of the Statistical Parametric Mapping (SPM) toolbox, version 8 or 12; 2) the mwf-artifact-removal toolbox:
+In order to run the code, the user needs 1) an installation of the [Statistical Parametric Mapping (SPM) toolbox](https://www.fil.ion.ucl.ac.uk/spm/software/), version 8 or 12; 2) the mwf-artifact-removal toolbox:
 
 [1] Somers, B., Francart, T. and Bertrand, A. (2018). A generic EEG artifact removal algorithm based on the multi-channel Wiener filter. Journal of Neural Engineering, 15(3), 036007. DOI: 10.1088/1741-2552/aaac92 
 
@@ -41,5 +41,3 @@ kde
 [9] URL: https://nl.mathworks.com/matlabcentral/fileexchange/58312-kernel-density-estimator-for-high-dimensions?s_tid=prof_contriblnk
 
 Author: Simon Van Eyndhoven (simon.vaneyndhoven@gmail.com)
-
-Date: 15/4/2020
