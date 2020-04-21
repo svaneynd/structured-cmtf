@@ -3,11 +3,11 @@ Pipeline for structured coupled matrix-tensor factorization (CMTF) of simultaneo
 
 This directory contains a collection of all MATLAB functions that are needed to perform the computations described in
 
-Van Eyndhoven, S., Dupont, P., Tousseyn, S., Vervliet, N., Van Paesschen, W., Van Huffel, S. & Hunyadi, B., 
-"Augmenting interictal mapping with neurovascular coupling biomarkers by structured factorization of epileptic EEG and fMRI data", 
-submitted to NeuroImage
+Van Eyndhoven S., Dupont P., Tousseyn S., Vervliet N., Van Paesschen W., Van Huffel S., Hunyadi B., "Augmenting interictal mapping with neurovascular coupling biomarkers by structured factorization of epileptic EEG and fMRI data", Internal Report 20-59, ESAT-STADIUS, KU Leuven (Leuven, Belgium), 2020., Lirias number: x.
 
-Usage: run 'main_pipeline.m'.
+If you use (parts of) this code, please cite this work.
+
+To get started: execute 'main_pipeline.m'. Providing your own data is necessary. However, the code can generate toy data, which allow to run the pipeline end-to-end, and observe the type of outputs that are being generated.
 
 In order to run the code, the user needs 1) an installation of the [Statistical Parametric Mapping (SPM) toolbox](https://www.fil.ion.ucl.ac.uk/spm/software/), version 8 or 12; 2) the mwf-artifact-removal toolbox:
 
