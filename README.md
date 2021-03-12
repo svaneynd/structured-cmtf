@@ -3,7 +3,7 @@ Pipeline for structured coupled matrix-tensor factorization (CMTF) of simultaneo
 
 This directory contains a collection of all MATLAB functions that are needed to perform the computations described in
 
-Van Eyndhoven S., Dupont P., Tousseyn S., Vervliet N., Van Paesschen W., Van Huffel S., Hunyadi B., "Augmenting interictal mapping with neurovascular coupling biomarkers by structured factorization of epileptic EEG and fMRI data". Internal Report 20-59, ESAT-STADIUS, KU Leuven (Leuven, Belgium), 2020. [arXiv:2004.14185](https://arxiv.org/abs/2004.14185).
+> Van Eyndhoven, S., Dupont, P., Tousseyn, S., Vervliet, N., Van Paesschen, W., Van Huffel, S., & Hunyadi, B. (2021). Augmenting interictal mapping with neurovascular coupling biomarkers by structured factorization of epileptic EEG and fMRI data. NeuroImage, 228, 117652 [https://doi.org/10.1016/j.neuroimage.2020.117652](https://doi.org/10.1016/j.neuroimage.2020.117652)
 
 If you use (parts of) this code, please cite this work.
 
